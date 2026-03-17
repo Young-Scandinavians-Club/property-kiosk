@@ -25,6 +25,7 @@ export function AppNavigator() {
           screenOptions={{
             headerShown: false,
             animation: 'fade',
+            lazy: true,
           }}>
           <Stack.Screen name="Landing" component={LandingScreen} />
           <Stack.Screen name="CheckIn" component={CheckInScreen} />

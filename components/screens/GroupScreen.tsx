@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -302,24 +303,6 @@ function CalendarView({
                         {formatGuestCount(booking)} ·{' '}
                         {formatShortDateRange(booking.checkin_date, booking.checkout_date)}
                       </Text>
-                      {getBookingVehicles(booking).length > 0 && (
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 2,
-                            marginTop: 2,
-                          }}>
-                          {getBookingVehicles(booking).map((v) => (
-                            <VehicleIcon
-                              key={v.id}
-                              type={v.type}
-                              size={12}
-                              color={getVehicleColorHex(v.color)}
-                            />
-                          ))}
-                        </View>
-                      )}
                     </View>
                   );
                 })}
@@ -425,7 +408,12 @@ export function GroupScreen() {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [selectedTabId, setSelectedTabId] = useState<TabId>('calendar');
   const property = getSelectedProperty();
-  const { data: info, error: infoError, isLoading: infoLoading } = usePropertyInfo(property);
+  const {
+    data: info,
+    error: infoError,
+    isLoading: infoLoading,
+    mutate: mutateInfo,
+  } = usePropertyInfo(property);
 
   const { startDate, endDate } = useMemo(() => {
     const today = new Date();
@@ -443,6 +431,7 @@ export function GroupScreen() {
     data: calendar,
     error: calendarError,
     isLoading: calendarLoading,
+    mutate: mutateCalendar,
   } = useBookingsCalendar(property, startDate, endDate);
 
   const rooms = useMemo(() => info?.rooms ?? [], [info?.rooms]);
@@ -488,6 +477,23 @@ export function GroupScreen() {
   const isLoading = infoLoading || calendarLoading;
   const error = infoError || calendarError;
 
+  const retry = useCallback(() => {
+    mutateInfo();
+    mutateCalendar();
+  }, [mutateInfo, mutateCalendar]);
+
+  const isFirstFocus = useRef(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+      } else {
+        retry();
+      }
+    }, [retry])
+  );
+
   if (isLoading) {
     return (
       <KioskScreen title="Who I'm staying with">
@@ -501,10 +507,13 @@ export function GroupScreen() {
   if (error || !info) {
     return (
       <KioskScreen title="Who I'm staying with">
-        <View className="flex-1 items-center justify-center">
+        <View className="flex-1 items-center justify-center gap-4 px-6">
           <Text className="text-center text-gray-600">
             {error instanceof Error ? error.message : 'Failed to load calendar.'}
           </Text>
+          <Pressable onPress={retry} className="rounded-xl bg-brand px-6 py-3 active:opacity-90">
+            <Text className="font-medium text-white">Try again</Text>
+          </Pressable>
         </View>
       </KioskScreen>
     );

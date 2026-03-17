@@ -1,4 +1,5 @@
-import { Fragment, useMemo, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { Fragment, useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
@@ -77,9 +78,20 @@ function EmptyTabsContent({ info }: { info: PropertyInfo }) {
 }
 
 export function RulesInfoScreen() {
-  const { data: info, error, isLoading } = usePropertyInfo('tahoe');
+  const { data: info, error, isLoading, mutate } = usePropertyInfo('tahoe');
   const tabs = useMemo(() => info?.tabs ?? [], [info]);
   const [selectedTabId, setSelectedTabId] = useState<string | null>(null);
+  const isFirstFocus = useRef(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+      } else {
+        mutate();
+      }
+    }, [mutate])
+  );
 
   const selectedTab = useMemo(
     () => tabs.find((t) => t.id === selectedTabId) ?? tabs[0] ?? null,
@@ -97,10 +109,15 @@ export function RulesInfoScreen() {
   if (error || !info) {
     return (
       <KioskScreen title="Rules & info">
-        <View className="flex-1 items-center justify-center">
+        <View className="flex-1 items-center justify-center gap-4 px-6">
           <Text className="text-center text-gray-600">
             {error instanceof Error ? error.message : 'Failed to load property information.'}
           </Text>
+          <Pressable
+            onPress={() => mutate()}
+            className="rounded-xl bg-brand px-6 py-3 active:opacity-90">
+            <Text className="font-medium text-white">Try again</Text>
+          </Pressable>
         </View>
       </KioskScreen>
     );
