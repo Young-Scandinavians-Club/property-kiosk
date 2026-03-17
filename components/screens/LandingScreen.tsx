@@ -7,7 +7,9 @@ import {
   UserGroupIcon,
 } from 'react-native-heroicons/outline';
 
+import { getSelectedProperty } from '@/api';
 import type { RootStackParamList } from '@/components/navigation/types';
+import { usePropertyInfo } from '@/lib/usePropertyInfo';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Landing'>;
 
@@ -26,7 +28,9 @@ function ActionButton({
     <Pressable
       onPress={onPress}
       className="w-full max-w-[520px] flex-row items-center justify-center gap-3 rounded-2xl bg-brand px-6 py-5 active:opacity-90">
-      <View className="h-6 w-6">{icon}</View>
+      <View className="h-6 w-6" style={{ transform: [{ translateY: -1 }] }}>
+        {icon}
+      </View>
       <Text className="text-lg font-semibold text-white">{label}</Text>
     </Pressable>
   );
@@ -34,6 +38,8 @@ function ActionButton({
 
 export function LandingScreen({ navigation }: Props) {
   const go = (to: LandingRouteName) => navigation.navigate(to);
+  const property = getSelectedProperty();
+  const { data: info } = usePropertyInfo(property);
 
   return (
     <View className="flex-1 items-center justify-center bg-white px-10">
@@ -44,6 +50,9 @@ export function LandingScreen({ navigation }: Props) {
           resizeMode="contain"
           style={{ width: 240, height: 240 }}
         />
+        {info?.name ? (
+          <Text className="mt-2 text-2xl font-semibold text-gray-800">{info.name}</Text>
+        ) : null}
       </View>
 
       <View className="mt-10 w-full items-center gap-4">
