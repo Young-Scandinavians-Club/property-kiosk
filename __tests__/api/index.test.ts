@@ -3,12 +3,13 @@
  */
 
 import { api } from '@/api';
+import type { PropertySlug } from '@/api/types';
 
 const mockGetApiConfig = jest.fn(() => ({
   baseUrl: 'https://test.example.com',
   apiKey: 'test-key',
 }));
-const mockGetSelectedProperty = jest.fn(() => 'tahoe' as const);
+const mockGetSelectedProperty = jest.fn<PropertySlug, []>(() => 'tahoe');
 
 jest.mock('@/api/config', () => ({
   ...jest.requireActual('@/api/config'),

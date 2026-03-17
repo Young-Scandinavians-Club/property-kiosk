@@ -1,16 +1,14 @@
-import { useNavigation } from '@react-navigation/native';
 import type { PropsWithChildren } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 
-export function KioskScreen({
-  title,
-  children,
-}: PropsWithChildren<{
+type KioskScreenProps = PropsWithChildren<{
   title: string;
-}>) {
-  const navigation = useNavigation();
+  /** Pass from parent screen to avoid MISSING_CONTEXT_ERROR when rendered outside navigator. */
+  navigation: { goBack: () => void; canGoBack: () => boolean };
+}>;
 
+export function KioskScreen({ title, children, navigation }: KioskScreenProps) {
   return (
     <View className="flex-1 bg-white px-6 pt-10">
       <View className="flex-row items-center">
@@ -18,7 +16,7 @@ export function KioskScreen({
           onPress={() => {
             if (navigation.canGoBack()) navigation.goBack();
           }}
-          className="h-12 w-12 items-center justify-center rounded-full bg-gray-100 active:opacity-80"
+          className="h-12 w-12 items-center justify-center rounded-full bg-zinc-100 active:opacity-80"
           accessibilityRole="button"
           accessibilityLabel="Go back">
           <ChevronLeftIcon color="#1b1b52" />

@@ -18,21 +18,20 @@ export function AppNavigator() {
   const navigationRef = useNavigationContainerRef<RootStackParamList>();
 
   return (
-    <IdleTimeoutProvider navigationRef={navigationRef}>
-      <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef}>
+      <IdleTimeoutProvider navigationRef={navigationRef}>
         <Stack.Navigator
           initialRouteName="Landing"
           screenOptions={{
             headerShown: false,
             animation: 'fade',
-            lazy: true,
           }}>
           <Stack.Screen name="Landing" component={LandingScreen} />
           <Stack.Screen name="CheckIn" component={CheckInScreen} />
           <Stack.Screen name="RulesInfo" component={RulesInfoScreen} />
           <Stack.Screen name="Group" component={GroupScreen} />
         </Stack.Navigator>
-      </NavigationContainer>
-    </IdleTimeoutProvider>
+      </IdleTimeoutProvider>
+    </NavigationContainer>
   );
 }

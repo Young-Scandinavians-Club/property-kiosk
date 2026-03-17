@@ -37,6 +37,8 @@ export interface BookingMember {
   first_name: string;
   last_name: string;
   email: string;
+  /** Full URL to profile picture (Gravatar or country default). Load directly in Image. */
+  avatar_url?: string;
 }
 
 export interface BookingRoom {

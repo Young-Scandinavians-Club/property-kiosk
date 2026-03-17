@@ -135,13 +135,13 @@ export function IdleTimeoutProvider({ children, navigationRef }: Props) {
           onPress={resetTimer}
           accessibilityLabel="Tap to stay on this screen">
           <View className="mx-8 max-w-md rounded-2xl bg-white p-6 shadow-lg">
-            <Text className="text-center text-lg font-semibold text-gray-900">
+            <Text className="text-center text-lg font-semibold text-zinc-900">
               Returning to home
             </Text>
             <Text className="mt-2 text-center text-2xl font-bold text-brand">
               {countdownSeconds}s
             </Text>
-            <Text className="mt-2 text-center text-sm text-gray-600">Tap anywhere to stay</Text>
+            <Text className="mt-2 text-center text-sm text-zinc-600">Tap anywhere to stay</Text>
           </View>
         </Pressable>
       </Modal>

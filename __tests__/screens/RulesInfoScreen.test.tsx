@@ -172,7 +172,7 @@ describe('RulesInfoScreen', () => {
   describe('success state with tabs', () => {
     it('renders split view with tab navigation and content', async () => {
       renderRulesInfo();
-      fireEvent.press(screen.getByText('Rules & info'));
+      fireEvent.press(screen.getByText('Rules & cabin info'));
 
       expect(await screen.findByText('Rules & info')).toBeTruthy();
       expect(screen.getByText('Welcome')).toBeTruthy();
@@ -181,7 +181,7 @@ describe('RulesInfoScreen', () => {
 
     it('renders all tab nav items from API', async () => {
       renderRulesInfo();
-      fireEvent.press(screen.getByText('Rules & info'));
+      fireEvent.press(screen.getByText('Rules & cabin info'));
 
       await screen.findByText('Welcome');
       expect(screen.getByText('Welcome')).toBeTruthy();
@@ -191,7 +191,7 @@ describe('RulesInfoScreen', () => {
 
     it('shows first tab content by default', async () => {
       renderRulesInfo();
-      fireEvent.press(screen.getByText('Rules & info'));
+      fireEvent.press(screen.getByText('Rules & cabin info'));
 
       await screen.findByText('TL;DR');
       expect(screen.getByText('Wi-Fi Password')).toBeTruthy();
@@ -201,7 +201,7 @@ describe('RulesInfoScreen', () => {
 
     it('switches to Pet Policy content when Pet Policy tab is pressed', async () => {
       renderRulesInfo();
-      fireEvent.press(screen.getByText('Rules & info'));
+      fireEvent.press(screen.getByText('Rules & cabin info'));
       await screen.findByText('Welcome');
 
       fireEvent.press(screen.getByText('Pet Policy'));
@@ -213,7 +213,7 @@ describe('RulesInfoScreen', () => {
 
     it('switches to Parking content when Parking tab is pressed', async () => {
       renderRulesInfo();
-      fireEvent.press(screen.getByText('Rules & info'));
+      fireEvent.press(screen.getByText('Rules & cabin info'));
       await screen.findByText('Welcome');
 
       fireEvent.press(screen.getByText('Parking'));
@@ -222,7 +222,7 @@ describe('RulesInfoScreen', () => {
 
     it('renders markdown section content', async () => {
       renderRulesInfo();
-      fireEvent.press(screen.getByText('Rules & info'));
+      fireEvent.press(screen.getByText('Rules & cabin info'));
       await screen.findByText('Welcome');
 
       // Section content is rendered via Markdown (Welcome2024! appears in Wi-Fi Password section)
@@ -231,13 +231,13 @@ describe('RulesInfoScreen', () => {
 
     it('renders back button', async () => {
       renderRulesInfo();
-      fireEvent.press(screen.getByText('Rules & info'));
+      fireEvent.press(screen.getByText('Rules & cabin info'));
       expect(await screen.findByLabelText('Go back')).toBeTruthy();
     });
 
     it('navigates back when back button is pressed', async () => {
       renderRulesInfo();
-      fireEvent.press(screen.getByText('Rules & info'));
+      fireEvent.press(screen.getByText('Rules & cabin info'));
       await screen.findByText('Welcome');
 
       fireEvent.press(screen.getByLabelText('Go back'));
@@ -257,7 +257,7 @@ describe('RulesInfoScreen', () => {
 
     it('shows Info nav and fallback content with check-in/out instructions', async () => {
       renderRulesInfo();
-      fireEvent.press(screen.getByText('Rules & info'));
+      fireEvent.press(screen.getByText('Rules & cabin info'));
 
       await screen.findByText('Info');
       expect(screen.getByText('Clear Lake Property')).toBeTruthy();
@@ -282,7 +282,7 @@ describe('RulesInfoScreen', () => {
 
     it('shows placeholder when tabs empty and no instructions', async () => {
       renderRulesInfo();
-      fireEvent.press(screen.getByText('Rules & info'));
+      fireEvent.press(screen.getByText('Rules & cabin info'));
 
       await screen.findByText('Info');
       expect(screen.getByText('Minimal Property')).toBeTruthy();

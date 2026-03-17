@@ -57,6 +57,7 @@ const mockCalendarResponse = {
           first_name: 'Jane',
           last_name: 'Doe',
           email: 'jane@example.com',
+          avatar_url: 'https://example.com/avatar.jpg',
         },
         rooms: [{ id: 'room1', name: 'Room 1' }],
         guests: [],

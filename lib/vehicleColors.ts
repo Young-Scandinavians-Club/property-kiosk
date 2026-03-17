@@ -16,10 +16,10 @@ const COLOR_TO_HEX: Record<string, string> = {
   Pink: '#ec4899',
 };
 
-/** Default gray when color is unknown. */
+/** Default zinc when color is unknown. */
 const DEFAULT_COLOR = '#6b7280';
 
-/** Returns hex for a color name; falls back to default gray if unknown. */
+/** Returns hex for a color name; falls back to default zinc if unknown. */
 export function getVehicleColorHex(colorName: string | undefined): string {
   if (!colorName) return DEFAULT_COLOR;
   const hex = COLOR_TO_HEX[colorName];

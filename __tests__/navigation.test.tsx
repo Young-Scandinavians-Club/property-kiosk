@@ -47,8 +47,8 @@ describe('App navigation', () => {
   it('starts at Landing screen', async () => {
     renderApp();
     expect(await screen.findByLabelText('Young Scandinavians Club logo')).toBeTruthy();
-    expect(screen.getByText('Check in')).toBeTruthy();
-    expect(screen.getByText('Rules & info')).toBeTruthy();
+    expect(screen.getByText('Check in to cabin')).toBeTruthy();
+    expect(screen.getByText('Rules & cabin info')).toBeTruthy();
     expect(screen.getByText(/Who I.m staying with/)).toBeTruthy();
   });
 
@@ -56,16 +56,16 @@ describe('App navigation', () => {
     renderApp();
 
     // Check in flow
-    fireEvent.press(screen.getByText('Check in'));
+    fireEvent.press(screen.getByText('Check in to cabin'));
     expect(await screen.findByText('Check in')).toBeTruthy();
     expect(
-      screen.getByText('Enter the last name on your booking to find your reservation.')
+      screen.getByText('Enter the last name on your booking to pull up your reservation.')
     ).toBeTruthy();
     fireEvent.press(screen.getByLabelText('Go back'));
     expect(await screen.findByLabelText('Young Scandinavians Club logo')).toBeTruthy();
 
     // Rules & info flow
-    fireEvent.press(screen.getByText('Rules & info'));
+    fireEvent.press(screen.getByText('Rules & cabin info'));
     expect(await screen.findByText('Rules & info')).toBeTruthy();
     expect(screen.getByText('Overview')).toBeTruthy();
     fireEvent.press(screen.getByLabelText('Go back'));
@@ -82,11 +82,11 @@ describe('App navigation', () => {
   it('preserves back navigation stack', async () => {
     renderApp();
 
-    fireEvent.press(screen.getByText('Check in'));
-    await screen.findByText('Enter the last name on your booking to find your reservation.');
+    fireEvent.press(screen.getByText('Check in to cabin'));
+    await screen.findByText('Enter the last name on your booking to pull up your reservation.');
     fireEvent.press(screen.getByLabelText('Go back'));
 
-    fireEvent.press(screen.getByText('Rules & info'));
+    fireEvent.press(screen.getByText('Rules & cabin info'));
     await screen.findByText('Overview');
     fireEvent.press(screen.getByLabelText('Go back'));
 

@@ -1,3 +1,5 @@
+import type { SvgProps } from 'react-native-svg';
+
 import HatchbackIcon from '@/assets/vehicles/hatchback.svg';
 import SedanIcon from '@/assets/vehicles/sedan.svg';
 import SuvIcon from '@/assets/vehicles/suv.svg';
@@ -12,10 +14,7 @@ interface VehicleIconProps {
   color?: string;
 }
 
-const ICONS: Record<
-  VehicleType,
-  React.ComponentType<{ width?: number; height?: number; fill?: string }>
-> = {
+const ICONS: Record<VehicleType, React.ComponentType<SvgProps>> = {
   Sedan: SedanIcon,
   SUV: SuvIcon,
   Hatchback: HatchbackIcon,
@@ -38,5 +37,5 @@ function normalizeType(type: string): VehicleType {
 export function VehicleIcon({ type, size = 20, color = '#6b7280' }: VehicleIconProps) {
   const Icon = ICONS[normalizeType(type)];
   if (!Icon) return null;
-  return <Icon width={size} height={size} fill={color} color={color} />;
+  return <Icon width={size} height={size} fill={color} />;
 }

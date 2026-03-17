@@ -68,23 +68,23 @@ describe('LandingScreen', () => {
 
   it('renders all three action buttons', () => {
     renderLanding();
-    expect(screen.getByText('Check in')).toBeTruthy();
-    expect(screen.getByText('Rules & info')).toBeTruthy();
+    expect(screen.getByText('Check in to cabin')).toBeTruthy();
+    expect(screen.getByText('Rules & cabin info')).toBeTruthy();
     expect(screen.getByText(/Who I.m staying with/)).toBeTruthy();
   });
 
   it('navigates to Check in screen when Check in button is pressed', async () => {
     renderLanding();
-    fireEvent.press(screen.getByText('Check in'));
+    fireEvent.press(screen.getByText('Check in to cabin'));
     expect(await screen.findByText('Check in')).toBeTruthy();
     expect(
-      screen.getByText('Enter the last name on your booking to find your reservation.')
+      screen.getByText('Enter the last name on your booking to pull up your reservation.')
     ).toBeTruthy();
   });
 
-  it('navigates to Rules & info screen when Rules & info button is pressed', async () => {
+  it('navigates to Rules & info screen when Rules & cabin info button is pressed', async () => {
     renderLanding();
-    fireEvent.press(screen.getByText('Rules & info'));
+    fireEvent.press(screen.getByText('Rules & cabin info'));
     expect(await screen.findByText('Rules & info')).toBeTruthy();
     expect(screen.getByText('Overview')).toBeTruthy();
   });

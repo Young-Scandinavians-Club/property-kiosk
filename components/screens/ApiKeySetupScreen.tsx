@@ -67,13 +67,13 @@ export function ApiKeySetupScreen({ onConfigured }: Props) {
           resizeMode="contain"
           style={{ width: 160, height: 160 }}
         />
-        <Text className="mt-6 text-center text-xl font-semibold text-gray-900">Configure API</Text>
-        <Text className="mt-2 text-center text-sm text-gray-500">
+        <Text className="mt-6 text-center text-xl font-semibold text-zinc-900">Configure API</Text>
+        <Text className="mt-2 text-center text-sm text-zinc-500">
           Enter the kiosk API key to connect to the booking system.
         </Text>
 
         <View className="mt-8 w-full max-w-md">
-          <Text className="mb-2 text-sm font-medium text-gray-700">API key</Text>
+          <Text className="mb-2 text-sm font-medium text-zinc-700">API key</Text>
           <TextInput
             value={apiKey}
             onChangeText={(t) => {
@@ -86,10 +86,10 @@ export function ApiKeySetupScreen({ onConfigured }: Props) {
             autoCapitalize="none"
             autoCorrect={false}
             editable={!saving}
-            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base text-zinc-900"
           />
 
-          <Text className="mb-2 mt-4 text-sm font-medium text-gray-700">Environment</Text>
+          <Text className="mb-2 mt-4 text-sm font-medium text-zinc-700">Environment</Text>
           <View className="flex-row flex-wrap gap-2">
             {ENVIRONMENTS.map((opt) => (
               <Pressable
@@ -97,11 +97,11 @@ export function ApiKeySetupScreen({ onConfigured }: Props) {
                 onPress={() => setEnvironment(opt.value)}
                 disabled={saving}
                 className={`rounded-xl px-4 py-2.5 ${
-                  environment === opt.value ? 'bg-brand' : 'bg-gray-200'
+                  environment === opt.value ? 'bg-brand' : 'bg-zinc-200'
                 }`}>
                 <Text
                   className={`font-medium ${
-                    environment === opt.value ? 'text-white' : 'text-gray-700'
+                    environment === opt.value ? 'text-white' : 'text-zinc-700'
                   }`}>
                   {opt.label}
                 </Text>
@@ -109,7 +109,7 @@ export function ApiKeySetupScreen({ onConfigured }: Props) {
             ))}
           </View>
 
-          <Text className="mb-2 mt-4 text-sm font-medium text-gray-700">Property</Text>
+          <Text className="mb-2 mt-4 text-sm font-medium text-zinc-700">Property</Text>
           <View className="flex-row flex-wrap gap-2">
             {PROPERTIES.map((opt) => (
               <Pressable
@@ -117,11 +117,11 @@ export function ApiKeySetupScreen({ onConfigured }: Props) {
                 onPress={() => setProperty(opt.value)}
                 disabled={saving}
                 className={`rounded-xl px-4 py-2.5 ${
-                  property === opt.value ? 'bg-brand' : 'bg-gray-200'
+                  property === opt.value ? 'bg-brand' : 'bg-zinc-200'
                 }`}>
                 <Text
                   className={`font-medium ${
-                    property === opt.value ? 'text-white' : 'text-gray-700'
+                    property === opt.value ? 'text-white' : 'text-zinc-700'
                   }`}>
                   {opt.label}
                 </Text>

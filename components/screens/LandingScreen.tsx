@@ -52,14 +52,14 @@ function MenuRow({
     <>
       <Pressable
         onPress={onPress}
-        className="flex-row items-center justify-between bg-white px-5 py-4 active:bg-slate-50">
+        className="flex-row items-center justify-between bg-white px-5 py-4 active:bg-zinc-50">
         <View className="flex-row items-center gap-4">
-          <View className="rounded-lg bg-slate-100 p-2">{icon}</View>
-          <Text className="text-base font-semibold text-slate-800">{label}</Text>
+          <View className="rounded-lg bg-zinc-100 p-2">{icon}</View>
+          <Text className="text-base font-semibold text-zinc-800">{label}</Text>
         </View>
         <ChevronRightIcon color="#94a3b8" size={20} />
       </Pressable>
-      {!isLast && <View className="ml-[60px] h-[1px] bg-slate-100" />}
+      {!isLast && <View className="ml-[60px] h-[1px] bg-zinc-100" />}
     </>
   );
 }
@@ -70,7 +70,7 @@ export function LandingScreen({ navigation }: Props) {
   const { data: info } = usePropertyInfo(property);
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-zinc-50" edges={['top']}>
       <View className="flex-1 px-6 pt-12">
         {/* Header Section */}
         <Animated.View
@@ -83,10 +83,10 @@ export function LandingScreen({ navigation }: Props) {
             style={{ width: 160, height: 160 }}
           />
           <View className="mt-6 items-center">
-            <Text className="text-sm font-bold uppercase tracking-widest text-slate-400">
+            <Text className="text-sm font-bold uppercase tracking-widest text-zinc-400">
               Welcome to
             </Text>
-            <Text className="mt-1 text-center text-3xl font-extrabold text-slate-900">
+            <Text className="mt-1 text-center text-3xl font-extrabold text-zinc-900">
               {info?.name || 'The YSC Cabin'}
             </Text>
           </View>
@@ -103,11 +103,11 @@ export function LandingScreen({ navigation }: Props) {
 
         {/* Secondary Info Section */}
         <Animated.View entering={FadeIn.delay(200).duration(400)} className="w-full">
-          <Text className="mb-3 ml-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+          <Text className="mb-3 ml-2 text-xs font-bold uppercase tracking-wider text-zinc-500">
             Your Stay
           </Text>
 
-          <View className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <View className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
             <MenuRow
               label="Rules & cabin info"
               icon={<InformationCircleIcon color="#1b1b52" size={24} />}
