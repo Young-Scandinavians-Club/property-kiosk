@@ -15,6 +15,7 @@ jest.mock('@/api', () => ({
     checkIn: (...args: unknown[]) => mockCheckIn(...args),
   },
   getSelectedProperty: () => 'tahoe' as const,
+  isApiConfigured: () => false,
 }));
 
 jest.mock('@/components/VehicleIcon', () => ({ VehicleIcon: () => null }));

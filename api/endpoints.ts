@@ -8,6 +8,8 @@ import type {
   BookingsResponse,
   CheckInRequest,
   CheckInResponse,
+  EventsListParams,
+  EventsResponse,
   PropertyInfoResponse,
   PropertySlug,
 } from './types';
@@ -86,6 +88,20 @@ export async function propertyInfo(
   property: PropertySlug
 ): Promise<PropertyInfoResponse> {
   return request<PropertyInfoResponse>(config, `${MOBILE_BASE}/properties/${property}/info`);
+}
+
+/**
+ * GET /api/v1/mobile/events
+ * List published events.
+ */
+export async function eventsList(
+  config: ApiClientConfig,
+  params: EventsListParams = {}
+): Promise<EventsResponse> {
+  return getWithQuery<EventsResponse>(config, `${MOBILE_BASE}/events`, {
+    page: params.page !== undefined ? String(params.page) : undefined,
+    page_size: params.page_size !== undefined ? String(params.page_size) : undefined,
+  });
 }
 
 /**

@@ -96,13 +96,9 @@ export function ApiKeySetupScreen({ onConfigured }: Props) {
                 key={opt.value}
                 onPress={() => setEnvironment(opt.value)}
                 disabled={saving}
-                className={`rounded-xl px-4 py-2.5 ${
-                  environment === opt.value ? 'bg-brand' : 'bg-zinc-200'
-                }`}>
+                className={`rounded-xl px-4 py-2.5 ${environment === opt.value ? 'bg-brand' : 'bg-zinc-200'}`}>
                 <Text
-                  className={`font-medium ${
-                    environment === opt.value ? 'text-white' : 'text-zinc-700'
-                  }`}>
+                  className={`font-medium ${environment === opt.value ? 'text-white' : 'text-zinc-700'}`}>
                   {opt.label}
                 </Text>
               </Pressable>
@@ -116,13 +112,9 @@ export function ApiKeySetupScreen({ onConfigured }: Props) {
                 key={opt.value}
                 onPress={() => setProperty(opt.value)}
                 disabled={saving}
-                className={`rounded-xl px-4 py-2.5 ${
-                  property === opt.value ? 'bg-brand' : 'bg-zinc-200'
-                }`}>
+                className={`rounded-xl px-4 py-2.5 ${property === opt.value ? 'bg-brand' : 'bg-zinc-200'}`}>
                 <Text
-                  className={`font-medium ${
-                    property === opt.value ? 'text-white' : 'text-zinc-700'
-                  }`}>
+                  className={`font-medium ${property === opt.value ? 'text-white' : 'text-zinc-700'}`}>
                   {opt.label}
                 </Text>
               </Pressable>

@@ -1,14 +1,15 @@
+import { useNavigation } from '@react-navigation/native';
 import type { PropsWithChildren } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 
 type KioskScreenProps = PropsWithChildren<{
   title: string;
-  /** Pass from parent screen to avoid MISSING_CONTEXT_ERROR when rendered outside navigator. */
-  navigation: { goBack: () => void; canGoBack: () => boolean };
 }>;
 
-export function KioskScreen({ title, children, navigation }: KioskScreenProps) {
+export function KioskScreen({ title, children }: KioskScreenProps) {
+  const navigation = useNavigation();
+
   return (
     <View className="flex-1 bg-white px-6 pt-10">
       <View className="flex-row items-center">

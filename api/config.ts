@@ -29,11 +29,16 @@ export function getBaseUrlForEnvironment(env: ApiEnvironment): string {
   return API_BASE_URLS[env];
 }
 
+/** Read a process.env value by name without triggering Expo's static EXPO_PUBLIC_ inlining. */
+function readEnv(key: string): string | undefined {
+  if (typeof process === 'undefined') return undefined;
+  return (process.env as Record<string, string | undefined>)[key];
+}
+
 function getBaseUrlFromEnv(): string {
-  if (typeof process === 'undefined') return getBaseUrlForEnvironment('local');
-  const env = process.env?.EXPO_PUBLIC_API_ENVIRONMENT as ApiEnvironment | undefined;
+  const env = readEnv('EXPO_PUBLIC_API_ENVIRONMENT') as ApiEnvironment | undefined;
   if (env && env in API_BASE_URLS) return getBaseUrlForEnvironment(env);
-  const url = process.env?.EXPO_PUBLIC_API_BASE_URL;
+  const url = readEnv('EXPO_PUBLIC_API_BASE_URL');
   if (url) return url;
   return getBaseUrlForEnvironment('local');
 }
@@ -71,10 +76,7 @@ export function setApiConfig(config: SetApiConfigInput): void {
 export function getApiConfig(): ApiClientConfig {
   if (currentConfig) return currentConfig;
   const baseUrl = getBaseUrlFromEnv();
-  const apiKey =
-    (typeof process !== 'undefined' &&
-      (process.env?.EXPO_PUBLIC_KIOSK_API_KEY || process.env?.KIOSK_API_KEY)) ||
-    '';
+  const apiKey = readEnv('EXPO_PUBLIC_KIOSK_API_KEY') || readEnv('KIOSK_API_KEY') || '';
   if (!apiKey) {
     throw new Error(
       'API key not configured. Call setApiConfig({ baseUrl, apiKey }) or set EXPO_PUBLIC_KIOSK_API_KEY (or KIOSK_API_KEY).'
@@ -85,11 +87,7 @@ export function getApiConfig(): ApiClientConfig {
 
 export function isApiConfigured(): boolean {
   if (currentConfig) return true;
-  const apiKey =
-    (typeof process !== 'undefined' &&
-      (process.env?.EXPO_PUBLIC_KIOSK_API_KEY || process.env?.KIOSK_API_KEY)) ||
-    '';
-  return Boolean(apiKey);
+  return Boolean(readEnv('EXPO_PUBLIC_KIOSK_API_KEY') || readEnv('KIOSK_API_KEY'));
 }
 
 /** Reset in-memory config state. For use in tests only. */

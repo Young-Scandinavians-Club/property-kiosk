@@ -201,3 +201,70 @@ export interface CheckInResult {
 export interface CheckInResponse {
   data: CheckInResult;
 }
+
+// =============================================================================
+// GET /events — response
+// =============================================================================
+
+export interface EventPricingInfo {
+  display_text: string;
+  has_free_tiers: boolean;
+  lowest_price: string | null;
+}
+
+export interface EventTicketTier {
+  id: string;
+  name: string;
+  price: string;
+  available: boolean;
+}
+
+export interface EventCoverImage {
+  optimized_path: string | null;
+  thumbnail_path: string | null;
+  blur_hash: string | null;
+}
+
+export interface Event {
+  id: string;
+  reference_id: string;
+  state: string;
+  title: string;
+  description: string | null;
+  start_date: string;
+  start_time: string;
+  end_date: string | null;
+  end_time: string | null;
+  location_name: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  age_restriction: string | null;
+  max_attendees: number | null;
+  tickets_tbd: boolean;
+  selling_fast: boolean;
+  recent_tickets_count: number;
+  ticket_count: number;
+  pricing_info: EventPricingInfo | null;
+  ticket_tiers: readonly EventTicketTier[];
+  cover_image: EventCoverImage | null;
+}
+
+export interface EventsMeta {
+  page: number;
+  page_size: number;
+  total_count: number;
+  total_pages: number;
+  has_next_page: boolean;
+  has_prev_page: boolean;
+}
+
+export interface EventsResponse {
+  data: readonly Event[];
+  meta: EventsMeta;
+}
+
+export interface EventsListParams {
+  page?: number;
+  page_size?: number;
+}

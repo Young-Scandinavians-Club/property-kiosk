@@ -1,4 +1,4 @@
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -180,10 +180,8 @@ function MemberAvatar({
   const isSoft = variant === 'soft';
   return (
     <View
-      className={`items-center justify-center rounded-full ${
-        isSoft ? 'border border-brand/20 bg-brand/10' : isBuyout ? 'bg-green-600' : 'bg-brand'
-      }`}
-      style={{ width: size, height: size }}>
+      className={`items-center justify-center rounded-full${!isSoft ? (isBuyout ? ' bg-green-600' : ' bg-brand') : ''}`}
+      style={[{ width: size, height: size }, isSoft ? avatarSoftStyle : null]}>
       <Text
         className={`font-bold ${isSoft ? 'text-brand' : 'text-white'}`}
         style={{ fontSize: size * 0.4 }}>
@@ -260,7 +258,7 @@ function CalendarView({
   const tableWidth = Math.max(ROW_LABEL_WIDTH + gridWidth, contentWidth);
 
   return (
-    <View className="flex-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <View className="flex-1 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
       <ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={true}
@@ -288,7 +286,7 @@ function CalendarView({
                   borderRightWidth: 1,
                   borderRightColor: '#e2e8f0',
                 }}>
-                <Text className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                <Text className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                   Room
                 </Text>
               </View>
@@ -306,7 +304,7 @@ function CalendarView({
                       backgroundColor: isToday ? '#fef3c7' : '#ffffff',
                     }}>
                     <Text
-                      className={`text-center text-xs font-semibold ${isToday ? 'text-amber-700' : 'text-slate-500'}`}
+                      className={`text-center text-xs font-semibold ${isToday ? 'text-amber-700' : 'text-zinc-500'}`}
                       numberOfLines={2}>
                       {formatShort(date)}
                     </Text>
@@ -336,7 +334,7 @@ function CalendarView({
                     borderRightWidth: 1,
                     borderRightColor: '#e2e8f0',
                   }}>
-                  <Text className="text-sm font-bold text-slate-700" numberOfLines={2}>
+                  <Text className="text-sm font-bold text-zinc-700" numberOfLines={2}>
                     {row.label}
                   </Text>
                 </View>
@@ -391,29 +389,40 @@ function CalendarView({
                             borderColor: isBuyout ? '#bbf7d0' : '#bae6fd',
                             borderWidth: 1,
                             borderRadius: 6,
-                            paddingHorizontal: 6,
-                            paddingVertical: 2,
-                            justifyContent: 'center',
+                            overflow: 'hidden',
+                            flexDirection: 'row',
+                            alignItems: 'center',
                           }}>
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                            <MemberAvatar booking={booking} size={20} isBuyout={isBuyout} />
-                            <Text
-                              className={`flex-1 text-xs font-bold ${isBuyout ? 'text-green-900' : 'text-slate-900'}`}
-                              numberOfLines={1}>
-                              {getMemberDisplayName(booking)}
-                            </Text>
-                            {booking.checked_in && (
-                              <CheckCircleIcon color={isBuyout ? '#16a34a' : '#0284c7'} size={14} />
+                          <View style={{ paddingLeft: 4, paddingVertical: 4 }}>
+                            <MemberAvatar
+                              booking={booking}
+                              size={rowHeight - 20}
+                              isBuyout={isBuyout}
+                            />
+                          </View>
+                          <View style={{ flex: 1, paddingHorizontal: 6, gap: 1 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                              <Text
+                                className={`flex-1 text-xs font-bold ${isBuyout ? 'text-green-900' : 'text-zinc-900'}`}
+                                numberOfLines={1}>
+                                {getMemberDisplayName(booking)}
+                              </Text>
+                              {booking.checked_in && (
+                                <CheckCircleIcon
+                                  color={isBuyout ? '#16a34a' : '#0284c7'}
+                                  size={13}
+                                />
+                              )}
+                            </View>
+                            {width > 110 && (
+                              <Text
+                                className={`text-[10px] font-medium ${isBuyout ? 'text-green-800' : 'text-zinc-600'}`}
+                                numberOfLines={1}>
+                                {formatGuestCount(booking)} ·{' '}
+                                {formatShortDateRange(booking.checkin_date, booking.checkout_date)}
+                              </Text>
                             )}
                           </View>
-                          {width > 100 && (
-                            <Text
-                              className={`mt-1 text-[10px] font-medium ${isBuyout ? 'text-green-800' : 'text-slate-600'}`}
-                              numberOfLines={1}>
-                              {formatGuestCount(booking)} ·{' '}
-                              {formatShortDateRange(booking.checkin_date, booking.checkout_date)}
-                            </Text>
-                          )}
                         </View>
                       );
                     })}
@@ -433,16 +442,14 @@ function CalendarView({
 
 function BookingListCard({ booking }: { booking: Booking }) {
   return (
-    <View className="mb-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <View className="mb-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
       {/* Header: Avatar & Name */}
       <View className="flex-row items-center justify-between gap-4">
         <View className="flex-1 flex-row items-center gap-3">
           <MemberAvatar booking={booking} size={48} variant="soft" />
           <View className="flex-1">
-            <Text className="text-lg font-bold text-slate-900">
-              {getMemberDisplayName(booking)}
-            </Text>
-            <Text className="mt-0.5 text-sm font-medium text-slate-500">
+            <Text className="text-lg font-bold text-zinc-900">{getMemberDisplayName(booking)}</Text>
+            <Text className="mt-0.5 text-sm font-medium text-zinc-500">
               {formatDate(booking.checkin_date)} – {formatDate(booking.checkout_date)}
             </Text>
           </View>
@@ -456,21 +463,20 @@ function BookingListCard({ booking }: { booking: Booking }) {
       </View>
 
       {/* Details Section */}
-      <View className="mt-4 gap-3 border-t border-slate-100 pt-4">
+      <View className="mt-4 gap-3 border-t border-zinc-100 pt-4">
         <View className="flex-row justify-between">
-          <Text className="text-sm font-bold uppercase tracking-wide text-slate-400">
+          <Text className="text-sm font-bold uppercase tracking-wide text-zinc-400">
             Stay Details
           </Text>
         </View>
 
         <View className="gap-1">
-          <Text className="text-base text-slate-700">
-            <Text className="font-semibold text-slate-900">Guests:</Text>{' '}
-            {formatGuestCount(booking)}
+          <Text className="text-base text-zinc-700">
+            <Text className="font-semibold text-zinc-900">Guests:</Text> {formatGuestCount(booking)}
           </Text>
           {booking.rooms?.length > 0 && (
-            <Text className="text-base text-slate-700">
-              <Text className="font-semibold text-slate-900">Rooms:</Text>{' '}
+            <Text className="text-base text-zinc-700">
+              <Text className="font-semibold text-zinc-900">Rooms:</Text>{' '}
               {booking.rooms.map((r) => r.name).join(', ')}
             </Text>
           )}
@@ -478,17 +484,17 @@ function BookingListCard({ booking }: { booking: Booking }) {
 
         {/* Vehicles */}
         {getBookingVehicles(booking).length > 0 && (
-          <View className="mt-2 rounded-xl border border-slate-100 bg-slate-50 p-3">
-            <Text className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">
+          <View className="mt-2 rounded-xl border border-zinc-100 bg-zinc-50 p-3">
+            <Text className="mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500">
               Registered Vehicles
             </Text>
             <View className="flex-row flex-wrap gap-2">
               {getBookingVehicles(booking).map((v) => (
                 <View
                   key={v.id}
-                  className="flex-row items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
+                  className="flex-row items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 shadow-sm">
                   <VehicleIcon type={v.type} size={20} color={getVehicleColorHex(v.color)} />
-                  <Text className="text-sm font-semibold text-slate-700">
+                  <Text className="text-sm font-semibold text-zinc-700">
                     {v.color || v.type}
                     {v.make ? ` · ${v.make}` : ''}
                   </Text>
@@ -519,12 +525,10 @@ function BookingListView({ bookings }: { bookings: Booking[] }) {
       showsVerticalScrollIndicator={false}>
       {sortedBookings.length === 0 ? (
         <View className="flex-1 items-center justify-center py-20">
-          <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+          <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-zinc-100">
             <CalendarIcon color="#94a3b8" size={32} />
           </View>
-          <Text className="text-lg font-medium text-slate-500">
-            No reservations in this period.
-          </Text>
+          <Text className="text-lg font-medium text-zinc-500">No reservations in this period.</Text>
         </View>
       ) : (
         sortedBookings.map((booking) => <BookingListCard key={booking.id} booking={booking} />)
@@ -538,7 +542,6 @@ function BookingListView({ bookings }: { bookings: Booking[] }) {
 // -----------------------------------------------------------------------------
 
 export function GroupScreen() {
-  const navigation = useNavigation();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [selectedTabId, setSelectedTabId] = useState<TabId>('calendar');
   const property = getSelectedProperty();
@@ -628,8 +631,8 @@ export function GroupScreen() {
 
   if (isLoading) {
     return (
-      <KioskScreen title="Who I'm staying with" navigation={navigation}>
-        <View className="flex-1 items-center justify-center bg-slate-50">
+      <KioskScreen title="Who I'm staying with">
+        <View className="flex-1 items-center justify-center bg-zinc-50">
           <ActivityIndicator size="large" color="#0284c7" />
         </View>
       </KioskScreen>
@@ -638,12 +641,12 @@ export function GroupScreen() {
 
   if (error || !info || !calendar) {
     return (
-      <KioskScreen title="Who I'm staying with" navigation={navigation}>
-        <View className="flex-1 items-center justify-center gap-6 bg-slate-50 px-6">
+      <KioskScreen title="Who I'm staying with">
+        <View className="flex-1 items-center justify-center gap-6 bg-zinc-50 px-6">
           <View className="h-16 w-16 items-center justify-center rounded-full bg-red-100">
             <Text className="text-2xl">⚠️</Text>
           </View>
-          <Text className="text-center text-lg text-slate-600">
+          <Text className="text-center text-lg text-zinc-600">
             {error instanceof Error ? error.message : 'Failed to load calendar data.'}
           </Text>
           <Pressable
@@ -657,33 +660,27 @@ export function GroupScreen() {
   }
 
   return (
-    <KioskScreen title="Who I'm staying with" navigation={navigation}>
-      <View className="flex-1 bg-slate-50 p-4">
+    <KioskScreen title="Who I'm staying with">
+      <View className="flex-1 p-4">
         {/* iOS-Style Segmented Control */}
-        <View className="shadow-inner mb-4 flex-row self-center rounded-lg bg-slate-200/60 p-1">
+        <View className="shadow-inner mb-4 flex-row self-center rounded-lg bg-zinc-200/60 p-1">
           <Pressable
             onPress={() => setSelectedTabId('calendar')}
-            className={`flex-row items-center gap-2 rounded-md px-6 py-2.5 ${
-              selectedTabId === 'calendar' ? 'bg-white shadow-sm' : 'bg-transparent'
-            }`}>
+            className="flex-row items-center gap-2 rounded-md px-6 py-2.5"
+            style={selectedTabId === 'calendar' ? tabActiveStyle : undefined}>
             <CalendarIcon size={18} color={selectedTabId === 'calendar' ? '#0f172a' : '#64748b'} />
             <Text
-              className={`text-sm font-bold ${
-                selectedTabId === 'calendar' ? 'text-slate-900' : 'text-slate-500'
-              }`}>
+              className={`text-sm font-bold ${selectedTabId === 'calendar' ? 'text-zinc-900' : 'text-zinc-500'}`}>
               Calendar
             </Text>
           </Pressable>
           <Pressable
             onPress={() => setSelectedTabId('list')}
-            className={`flex-row items-center gap-2 rounded-md px-6 py-2.5 ${
-              selectedTabId === 'list' ? 'bg-white shadow-sm' : 'bg-transparent'
-            }`}>
+            className="flex-row items-center gap-2 rounded-md px-6 py-2.5"
+            style={selectedTabId === 'list' ? tabActiveStyle : undefined}>
             <ListBulletIcon size={18} color={selectedTabId === 'list' ? '#0f172a' : '#64748b'} />
             <Text
-              className={`text-sm font-bold ${
-                selectedTabId === 'list' ? 'text-slate-900' : 'text-slate-500'
-              }`}>
+              className={`text-sm font-bold ${selectedTabId === 'list' ? 'text-zinc-900' : 'text-zinc-500'}`}>
               List
             </Text>
           </Pressable>
@@ -714,3 +711,23 @@ export function GroupScreen() {
     </KioskScreen>
   );
 }
+
+// Soft avatar variant uses CSS-variable-dependent opacity colours so it must
+// stay as a style object rather than a Tailwind className.
+const avatarSoftStyle = {
+  borderWidth: 1,
+  borderColor: 'rgba(27,27,82,0.2)',
+  backgroundColor: 'rgba(27,27,82,0.1)',
+} as const;
+
+// The active tab needs a white background + shadow.  shadow-sm in a
+// *conditional* className would trigger NativeWind's upgrade-warning crash, so
+// we keep it here and apply it via the style prop when the tab is selected.
+const tabActiveStyle = {
+  backgroundColor: '#ffffff',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.05,
+  shadowRadius: 2,
+  elevation: 1,
+} as const;

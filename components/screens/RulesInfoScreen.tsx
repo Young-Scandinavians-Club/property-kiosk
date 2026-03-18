@@ -1,5 +1,6 @@
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Fragment, useCallback, useMemo, useRef, useState } from 'react';
+import type { StyleProp, ViewStyle } from 'react-native';
 import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
@@ -42,13 +43,40 @@ const markdownStyles = {
   },
 };
 
+function NavButton({
+  label,
+  isSelected,
+  onPress,
+}: {
+  label: string;
+  isSelected: boolean;
+  onPress: () => void;
+}) {
+  const [pressed, setPressed] = useState(false);
+  const containerStyle: StyleProp<ViewStyle> = isSelected
+    ? navTabActiveStyle
+    : pressed
+      ? navTabPressedStyle
+      : navTabDefaultStyle;
+
+  return (
+    <Pressable
+      onPress={onPress}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      style={containerStyle}>
+      <Text style={isSelected ? navTabActiveLabelStyle : navTabDefaultLabelStyle} numberOfLines={2}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 function SectionContent({ section }: { section: PropertyInfoSection }) {
   return (
     <View className="mb-4">
       {section.title ? (
-        <Text className="mb-3 text-xl font-bold tracking-tight text-slate-900">
-          {section.title}
-        </Text>
+        <Text className="mb-3 text-xl font-bold tracking-tight text-zinc-900">{section.title}</Text>
       ) : null}
       <Markdown style={markdownStyles}>{section.content}</Markdown>
     </View>
@@ -59,7 +87,7 @@ function TabContent({ tab }: { tab: PropertyInfoTab }) {
   return (
     <View className="gap-6 pb-8">
       {tab.sections.map((section, idx) => (
-        <View key={idx} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <View key={idx} className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <SectionContent section={section} />
         </View>
       ))}
@@ -96,7 +124,7 @@ function EmptyTabsContent({ info }: { info: PropertyInfo }) {
   if (sections.length === 0) {
     return (
       <View className="flex-1 items-center justify-center pt-20">
-        <Text className="text-lg font-medium text-slate-400">
+        <Text className="text-lg font-medium text-zinc-400">
           No property information available.
         </Text>
       </View>
@@ -106,7 +134,7 @@ function EmptyTabsContent({ info }: { info: PropertyInfo }) {
   return (
     <View className="gap-6 pb-8">
       {sections.map((section, idx) => (
-        <View key={idx} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <View key={idx} className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <SectionContent section={section} />
         </View>
       ))}
@@ -115,7 +143,6 @@ function EmptyTabsContent({ info }: { info: PropertyInfo }) {
 }
 
 export function RulesInfoScreen() {
-  const navigation = useNavigation();
   const property = getSelectedProperty();
   const { data: info, error, isLoading, mutate } = usePropertyInfo(property);
 
@@ -140,7 +167,7 @@ export function RulesInfoScreen() {
 
   if (isLoading) {
     return (
-      <KioskScreen title="Rules & info" navigation={navigation}>
+      <KioskScreen title="Rules & info">
         <RulesInfoSkeleton />
       </KioskScreen>
     );
@@ -148,12 +175,12 @@ export function RulesInfoScreen() {
 
   if (error || !info) {
     return (
-      <KioskScreen title="Rules & info" navigation={navigation}>
+      <KioskScreen title="Rules & info">
         <View className="mb-2 flex-1 items-center justify-center gap-6 px-6">
           <View className="mb-2 h-16 w-16 items-center justify-center rounded-full bg-red-100">
             <Text className="text-2xl">⚠️</Text>
           </View>
-          <Text className="text-center text-lg text-slate-600">
+          <Text className="text-center text-lg text-zinc-600">
             {error instanceof Error ? error.message : 'Failed to load property information.'}
           </Text>
           <Pressable
@@ -169,34 +196,23 @@ export function RulesInfoScreen() {
   const hasTabs = tabs.length > 0;
 
   return (
-    <KioskScreen title="Rules & info" navigation={navigation}>
-      <View className="flex-1 flex-row bg-slate-50">
+    <KioskScreen title="Rules & info">
+      <View className="flex-1 flex-row">
         {/* Left nav - fixed master column */}
-        <View className="w-64 flex-shrink-0 border-r border-slate-200 bg-slate-50/50 pt-2">
+        <View className="w-64 flex-shrink-0 border-r border-zinc-200 pt-2">
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}>
             {hasTabs ? (
               <Fragment>
-                {tabs.map((tab) => {
-                  const isSelected = selectedTab?.id === tab.id;
-                  return (
-                    <Pressable
-                      key={tab.id}
-                      onPress={() => setSelectedTabId(tab.id)}
-                      className={`mb-2 rounded-xl px-4 py-4 ${
-                        isSelected ? 'bg-brand shadow-sm' : 'bg-transparent active:bg-slate-200/50'
-                      }`}>
-                      <Text
-                        className={`text-base font-bold ${
-                          isSelected ? 'text-white' : 'text-slate-600'
-                        }`}
-                        numberOfLines={2}>
-                        {tab.title}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
+                {tabs.map((tab) => (
+                  <NavButton
+                    key={tab.id}
+                    label={tab.title}
+                    isSelected={selectedTab?.id === tab.id}
+                    onPress={() => setSelectedTabId(tab.id)}
+                  />
+                ))}
               </Fragment>
             ) : (
               <View className="rounded-xl bg-brand px-4 py-4 shadow-sm">
@@ -223,3 +239,42 @@ export function RulesInfoScreen() {
     </KioskScreen>
   );
 }
+
+const navTabBase = {
+  marginBottom: 10,
+  borderRadius: 14,
+  paddingHorizontal: 16,
+  paddingVertical: 17,
+} as const;
+
+const navTabActiveStyle = {
+  ...navTabBase,
+  backgroundColor: '#1b1b52',
+  shadowColor: '#1b1b52',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.25,
+  shadowRadius: 4,
+  elevation: 3,
+} as const;
+
+const navTabDefaultStyle = {
+  ...navTabBase,
+  backgroundColor: '#f1f5f9',
+} as const;
+
+const navTabPressedStyle = {
+  ...navTabBase,
+  backgroundColor: '#e2e8f0',
+} as const;
+
+const navTabActiveLabelStyle = {
+  fontSize: 16,
+  fontWeight: '700' as const,
+  color: '#ffffff',
+} as const;
+
+const navTabDefaultLabelStyle = {
+  fontSize: 16,
+  fontWeight: '600' as const,
+  color: '#475569',
+} as const;

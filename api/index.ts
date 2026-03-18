@@ -5,12 +5,14 @@ import {
   bookingsCalendar as _bookingsCalendar,
   propertyInfo as _propertyInfo,
   checkIn as _checkIn,
+  eventsList as _eventsList,
 } from './endpoints';
 import type {
   BookingsCalendarParams,
   BookingsListParams,
   BookingsLookupParams,
   CheckInRequest,
+  EventsListParams,
   PropertySlug,
 } from './types';
 
@@ -27,7 +29,14 @@ export {
   setSelectedProperty,
 } from './config';
 export type { ApiEnvironment, SetApiConfigInput } from './config';
-export { bookingsLookup, bookingsList, bookingsCalendar, propertyInfo, checkIn } from './endpoints';
+export {
+  bookingsLookup,
+  bookingsList,
+  bookingsCalendar,
+  propertyInfo,
+  checkIn,
+  eventsList,
+} from './endpoints';
 
 /** Params for api.bookingsList / api.bookingsCalendar; property defaults to getSelectedProperty(). */
 export type BookingsListParamsOptional = Omit<BookingsListParams, 'property'> & {
@@ -63,6 +72,7 @@ export const api = {
       ...body,
       property: body.property ?? getSelectedProperty(),
     }),
+  eventsList: (params: EventsListParams = {}) => _eventsList(getApiConfig(), params),
 };
 
 export type {
@@ -84,6 +94,13 @@ export type {
   CheckInResult,
   CheckInVehicle,
   CheckInVehicleInput,
+  Event,
+  EventCoverImage,
+  EventPricingInfo,
+  EventsMeta,
+  EventsListParams,
+  EventsResponse,
+  EventTicketTier,
   IsoDateString,
   PropertyInfo,
   PropertyInfoResponse,

@@ -7,6 +7,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   View,
@@ -183,9 +184,7 @@ function VehicleFormCard({ index, vehicle, canRemove, onChange, onRemove }: Vehi
                   color={vehicle.type === value ? '#1b1b52' : '#94a3b8'}
                 />
                 <Text
-                  className={`text-xs font-bold ${
-                    vehicle.type === value ? 'text-brand' : 'text-zinc-500'
-                  }`}>
+                  className={`text-xs font-bold ${vehicle.type === value ? 'text-brand' : 'text-zinc-500'}`}>
                   {label}
                 </Text>
               </Pressable>
@@ -204,9 +203,10 @@ function VehicleFormCard({ index, vehicle, canRemove, onChange, onRemove }: Vehi
                 <Pressable
                   key={value}
                   onPress={() => onChange(index, 'color', value)}
-                  className={`h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 ${
-                    isSelected ? 'border-brand' : 'border-transparent'
-                  }`}>
+                  style={[
+                    styles.colorCircle,
+                    isSelected ? styles.colorCircleSelected : styles.colorCircleUnselected,
+                  ]}>
                   <View
                     style={{ backgroundColor: hex }}
                     className="h-8 w-8 rounded-full border border-zinc-200"
@@ -239,18 +239,21 @@ export function CheckInScreen() {
   const { state, actions } = useCheckIn();
 
   return (
-    <KioskScreen title="Check in" navigation={navigation}>
+    <KioskScreen title="Check in">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1 bg-zinc-50">
-        <View className="pb-2 pt-6">
+        className="flex-1">
+        <View className="pb-2 pt-3">
           <CheckInBreadcrumb currentStep={state.step} />
         </View>
 
         {state.step === 'search' && (
           <Animated.View
             entering={FadeIn.duration(300)}
-            className="flex-1 items-center justify-center px-6">
+            className="flex-1 items-center justify-center px-6 pb-32">
+            <View className="mb-8 h-28 w-28 items-center justify-center rounded-full bg-brand/10">
+              <MagnifyingGlassIcon color="#1b1b52" size={64} />
+            </View>
             <Text className="mb-6 text-center text-lg text-zinc-600">
               Enter the last name on your booking to pull up your reservation.
             </Text>
@@ -494,3 +497,23 @@ export function CheckInScreen() {
     </KioskScreen>
   );
 }
+
+// Color picker circles use dynamic background set via inline style (hex from
+// data), so they can't use className.  Border colour is conditional too.
+const styles = StyleSheet.create({
+  colorCircle: {
+    height: 40,
+    width: 40,
+    flexShrink: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 9999,
+    borderWidth: 2,
+  },
+  colorCircleSelected: {
+    borderColor: '#1b1b52',
+  },
+  colorCircleUnselected: {
+    borderColor: 'transparent',
+  },
+});

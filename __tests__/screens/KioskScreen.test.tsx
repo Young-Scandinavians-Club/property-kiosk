@@ -43,9 +43,7 @@ function renderKioskScreen(title: string) {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Landing" component={LandingScreen} />
-        <Stack.Screen name="CheckIn">
-          {({ navigation }) => <KioskScreen title={title} navigation={navigation} />}
-        </Stack.Screen>
+        <Stack.Screen name="CheckIn">{() => <KioskScreen title={title} />}</Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -81,8 +79,8 @@ describe('KioskScreen', () => {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Landing" component={LandingScreen} />
           <Stack.Screen name="CheckIn">
-            {({ navigation }) => (
-              <KioskScreen title="Check in" navigation={navigation}>
+            {() => (
+              <KioskScreen title="Check in">
                 <ChildContent />
               </KioskScreen>
             )}

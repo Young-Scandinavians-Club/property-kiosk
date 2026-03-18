@@ -1,16 +1,17 @@
 import type { NavigationContainerRef } from '@react-navigation/native';
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { Modal, Pressable, Text, View } from 'react-native';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { Modal, Platform, StyleSheet, Text, View } from 'react-native';
 
 import type { RootStackParamList } from '@/components/navigation/types';
 
 const IDLE_TIMEOUT_MS = 15_000;
-const COUNTDOWN_START_MS = 10_000; // Show countdown when 10 seconds left
-const TICK_MS = 100;
+const COUNTDOWN_START_MS = 10_000;
+const TICK_MS = 250;
 
-const LOG = (msg: string, ...args: unknown[]) => {
-  console.log(`[IdleTimeout] ${msg}`, ...args);
-};
+// ─── Debug helpers ────────────────────────────────────────────────────────────
+const T = () => new Date().toISOString().slice(11, 23); // HH:MM:SS.mmm
+const log = (tag: string, msg: string, extra?: object) =>
+  console.log(`[IT ${T()}] ${tag}: ${msg}`, extra ?? '');
 
 type Props = {
   children: ReactNode;
@@ -18,133 +19,187 @@ type Props = {
 };
 
 export function IdleTimeoutProvider({ children, navigationRef }: Props) {
+  log('RENDER', 'component rendering', {
+    countdownSecondsInitial: 'see useState below',
+    navRefReady: !!navigationRef.current,
+  });
+
   const [countdownSeconds, setCountdownSeconds] = useState<number | null>(null);
+
+  const countdownSecondsRef = useRef<number | null>(null);
   const lastActivityRef = useRef(Date.now());
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const countdownActiveRef = useRef(false);
+  const lastTickLogRef = useRef(0); // throttle per-tick spam
 
-  const resetTimer = useCallback(() => {
-    LOG('Touch/input detected, resetting timer');
-    lastActivityRef.current = Date.now();
-    setCountdownSeconds(null);
-    countdownActiveRef.current = false;
-
-    if (countdownTimerRef.current) {
-      clearInterval(countdownTimerRef.current);
-      countdownTimerRef.current = null;
+  const updateCountdown = useCallback((value: number | null) => {
+    if (countdownSecondsRef.current !== value) {
+      log('COUNTDOWN', `${countdownSecondsRef.current} → ${value}`);
+      countdownSecondsRef.current = value;
+      setCountdownSeconds(value);
     }
   }, []);
 
+  const resetTimer = useCallback(() => {
+    const elapsed = Date.now() - lastActivityRef.current;
+    log('TOUCH', `activity detected — resetting timer (was ${elapsed}ms idle)`);
+    lastActivityRef.current = Date.now();
+    updateCountdown(null);
+  }, [updateCountdown]);
+
   const goToHome = useCallback(() => {
+    const currentRoute = navigationRef.current?.getCurrentRoute()?.name;
+    log('GO_HOME', 'attempting navigation reset', {
+      currentRoute,
+      navRefReady: !!navigationRef.current,
+    });
     try {
-      const currentRoute = navigationRef.current?.getCurrentRoute()?.name;
-      LOG('goToHome called', { currentRoute, navRefReady: !!navigationRef.current });
       if (currentRoute === 'Landing') {
-        LOG('Already on Landing, skipping navigation');
+        log('GO_HOME', 'already on Landing — skipping');
         return;
       }
-      LOG('Resetting navigation to Landing');
-      navigationRef.current?.reset({
-        index: 0,
-        routes: [{ name: 'Landing' }],
-      });
+      navigationRef.current?.reset({ index: 0, routes: [{ name: 'Landing' }] });
+      log('GO_HOME', 'reset dispatched');
     } catch (err) {
-      LOG('Navigation error', err);
+      log('GO_HOME', 'navigation error', { err: String(err) });
+      console.warn('[IdleTimeout] Navigation error', err);
     }
     resetTimer();
   }, [navigationRef, resetTimer]);
 
-  useEffect(() => {
-    LOG('Idle timeout effect mounted, starting main timer');
-    let lastLogTime = 0;
-    let lastProgressLog = 0;
+  // ─── Clear stale fast-refresh state before first paint ───────────────────
+  useLayoutEffect(() => {
+    log('LAYOUT_EFFECT', 'clearing stale state before first paint', {
+      staleCountdown: countdownSecondsRef.current,
+    });
+    lastActivityRef.current = Date.now();
+    updateCountdown(null);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const checkIdle = () => {
-      if (!navigationRef.current) {
-        if (Date.now() - lastLogTime > 5000) {
-          LOG('Nav ref not ready yet');
-          lastLogTime = Date.now();
-        }
+  // ─── Main idle tick loop ───────────────────────────────────────────────────
+  useEffect(() => {
+    log('EFFECT', 'mounting — starting interval', { TICK_MS, IDLE_TIMEOUT_MS, COUNTDOWN_START_MS });
+
+    const tick = () => {
+      const now = Date.now();
+      const elapsed = now - lastActivityRef.current;
+      const navReady = !!navigationRef.current;
+      const currentRoute = navReady
+        ? (navigationRef.current!.getCurrentRoute()?.name ?? null)
+        : null;
+
+      // Throttle the noisy per-tick log to once per second
+      if (now - lastTickLogRef.current >= 1000) {
+        log(
+          'TICK',
+          `route=${currentRoute ?? 'null'} navReady=${navReady} elapsed=${elapsed}ms countdown=${countdownSecondsRef.current}`
+        );
+        lastTickLogRef.current = now;
+      }
+
+      if (!navReady) {
+        log('TICK_SAFE', 'navRef null — holding activity clock fresh');
+        lastActivityRef.current = now;
+        updateCountdown(null);
         return;
       }
 
-      const currentRoute = navigationRef.current.getCurrentRoute()?.name;
-      if (currentRoute === 'Landing') return;
-
-      const elapsed = Date.now() - lastActivityRef.current;
-
-      // Log progress every 5s when idle (helps verify timer is running)
-      if (Date.now() - lastProgressLog > 5000 && elapsed > 0) {
-        LOG('Idle progress', { elapsedMs: elapsed, currentRoute });
-        lastProgressLog = Date.now();
+      if (!currentRoute || currentRoute === 'Landing') {
+        lastActivityRef.current = now;
+        updateCountdown(null);
+        return;
       }
 
       if (elapsed >= IDLE_TIMEOUT_MS) {
-        LOG('Idle timeout reached', { elapsedMs: elapsed });
+        log('IDLE', `timeout reached (${elapsed}ms) — going home`);
         goToHome();
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
         return;
       }
 
       const remaining = IDLE_TIMEOUT_MS - elapsed;
-      if (remaining <= COUNTDOWN_START_MS && !countdownActiveRef.current) {
-        countdownActiveRef.current = true;
-        const seconds = Math.ceil(remaining / 1000);
-        LOG('Countdown started', { remainingMs: remaining, seconds });
-        setCountdownSeconds(seconds);
-        countdownTimerRef.current = setInterval(() => {
-          const now = Date.now();
-          const rem = IDLE_TIMEOUT_MS - (now - lastActivityRef.current);
-          if (rem <= 0) {
-            LOG('Countdown finished, navigating to home');
-            if (countdownTimerRef.current) {
-              clearInterval(countdownTimerRef.current);
-              countdownTimerRef.current = null;
-            }
-            goToHome();
-            return;
-          }
-          const sec = Math.ceil(rem / 1000);
-          setCountdownSeconds(sec);
-        }, TICK_MS);
+      if (remaining <= COUNTDOWN_START_MS) {
+        const sec = Math.ceil(remaining / 1000);
+        if (countdownSecondsRef.current !== sec) {
+          log('COUNTDOWN', `showing ${sec}s (remaining=${remaining}ms)`);
+        }
+        updateCountdown(sec);
+      } else {
+        updateCountdown(null);
       }
     };
 
-    timerRef.current = setInterval(checkIdle, TICK_MS);
+    const id = setInterval(tick, TICK_MS);
+
     return () => {
-      LOG('Idle timeout effect unmounting, clearing timers');
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+      log('EFFECT', 'unmounting — clearing interval');
+      clearInterval(id);
     };
-  }, [goToHome, navigationRef]);
+  }, [goToHome, navigationRef, updateCountdown]);
+
+  log('RENDER', `modal visible=${countdownSeconds !== null} countdownSeconds=${countdownSeconds}`);
 
   return (
-    <Pressable className="flex-1" onPressIn={resetTimer}>
+    <View
+      className="flex-1"
+      onStartShouldSetResponderCapture={() => {
+        log('TOUCH', 'touch detected in capture phase — resetting timer');
+        resetTimer();
+        return false;
+      }}>
       {children}
       <Modal
         visible={countdownSeconds !== null}
         transparent
         animationType="fade"
-        statusBarTranslucent>
-        <Pressable
-          className="flex-1 items-center justify-center bg-black/40"
-          onPress={resetTimer}
+        statusBarTranslucent
+        onShow={() => log('MODAL', 'onShow fired — modal is now visible')}
+        onDismiss={() => log('MODAL', 'onDismiss fired — modal dismissed')}>
+        <View
+          style={StyleSheet.absoluteFill}
+          className="items-end justify-end pb-8 pr-8"
+          pointerEvents="box-none"
           accessibilityLabel="Tap to stay on this screen">
-          <View className="mx-8 max-w-md rounded-2xl bg-white p-6 shadow-lg">
-            <Text className="text-center text-lg font-semibold text-zinc-900">
+          <View
+            style={styles.timerCard}
+            onStartShouldSetResponder={() => {
+              log('MODAL_TOUCH', 'onStartShouldSetResponder → returning true');
+              return true;
+            }}
+            onResponderGrant={() => log('MODAL_TOUCH', 'onResponderGrant — view claimed the touch')}
+            onResponderRelease={() => {
+              log('MODAL_TOUCH', 'onResponderRelease — calling resetTimer');
+              resetTimer();
+            }}>
+            <Text className="text-center text-xl font-semibold text-zinc-900">
               Returning to home
             </Text>
-            <Text className="mt-2 text-center text-2xl font-bold text-brand">
+            <Text className="mt-2 text-center text-8xl font-bold text-brand">
               {countdownSeconds}s
             </Text>
-            <Text className="mt-2 text-center text-sm text-zinc-600">Tap anywhere to stay</Text>
+            <Text className="mt-2 text-center text-base text-zinc-500">Tap to stay</Text>
           </View>
-        </Pressable>
+        </View>
       </Modal>
-    </Pressable>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  timerCard: {
+    backgroundColor: 'white',
+    borderRadius: 24,
+    paddingVertical: 24,
+    paddingHorizontal: 36,
+    minWidth: 200,
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+});

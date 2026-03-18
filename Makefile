@@ -1,13 +1,18 @@
-.PHONY: lint format test typecheck
+.PHONY: help lint format test typecheck
 
-lint:
+.DEFAULT_GOAL := help
+
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
+
+lint: ## Run linter
 	npm run -s lint
 
-format:
+format: ## Format source files
 	npm run -s format
 
-typecheck:
+typecheck: ## Run type checker
 	npm run -s typecheck
 
-test:
+test: ## Run tests
 	npm run -s test
