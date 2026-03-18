@@ -30,7 +30,7 @@ function PrimaryActionButton({
     <Pressable
       onPress={onPress}
       className="w-full flex-row items-center justify-center gap-3 rounded-2xl bg-brand px-6 py-5 shadow-sm active:opacity-90">
-      <View className="h-6 w-6">{icon}</View>
+      <View className="-mt-1 h-6 w-6">{icon}</View>
       <Text className="text-lg font-bold text-white">{label}</Text>
     </Pressable>
   );
@@ -63,7 +63,8 @@ function MenuRow({
   );
 }
 
-function formatEventDate(startDate: string): string {
+function formatEventDate(startDate: string | null): string {
+  if (!startDate) return '';
   const date = new Date(startDate);
   return date.toLocaleDateString('en-US', {
     weekday: 'short',
@@ -72,7 +73,8 @@ function formatEventDate(startDate: string): string {
   });
 }
 
-function formatEventTime(startTime: string): string {
+function formatEventTime(startTime: string | null): string {
+  if (!startTime) return '';
   const parts = startTime.split(':').map(Number);
   const hours = parts[0] ?? 0;
   const minutes = parts[1] ?? 0;

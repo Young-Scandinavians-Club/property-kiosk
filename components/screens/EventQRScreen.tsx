@@ -18,7 +18,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'EventQR'>;
 
 const HERO_HEIGHT = 380;
 
-function formatEventDate(startDate: string): string {
+function formatEventDate(startDate: string | null): string {
+  if (!startDate) return '';
   const date = new Date(startDate);
   return date.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -28,7 +29,8 @@ function formatEventDate(startDate: string): string {
   });
 }
 
-function formatEventTime(startTime: string): string {
+function formatEventTime(startTime: string | null): string {
+  if (!startTime) return '';
   const parts = startTime.split(':').map(Number);
   const hours = parts[0] ?? 0;
   const minutes = parts[1] ?? 0;
@@ -48,11 +50,12 @@ function buildCoverUrl(path: string): string {
   }
 }
 
-function buildEventUrl(referenceId: string): string {
+function buildEventUrl(referenceId: string | null): string {
+  const id = referenceId ?? '';
   try {
-    return `${getApiConfig().baseUrl.replace(/\/$/, '')}/events/${referenceId}`;
+    return `${getApiConfig().baseUrl.replace(/\/$/, '')}/events/${id}`;
   } catch {
-    return `https://ysc.org/events/${referenceId}`;
+    return `https://ysc.org/events/${id}`;
   }
 }
 

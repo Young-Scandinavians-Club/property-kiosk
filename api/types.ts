@@ -226,13 +226,13 @@ export interface EventCoverImage {
 }
 
 export interface Event {
-  id: string;
-  reference_id: string;
-  state: string;
+  id: string | null;
+  reference_id: string | null;
+  state: string | null;
   title: string;
   description: string | null;
-  start_date: string;
-  start_time: string;
+  start_date: string | null;
+  start_time: string | null;
   end_date: string | null;
   end_time: string | null;
   location_name: string | null;
@@ -241,12 +241,12 @@ export interface Event {
   longitude: number | null;
   age_restriction: string | null;
   max_attendees: number | null;
-  tickets_tbd: boolean;
-  selling_fast: boolean;
-  recent_tickets_count: number;
-  ticket_count: number;
+  tickets_tbd: boolean | null;
+  selling_fast: boolean | null;
+  recent_tickets_count: number | null;
+  ticket_count: number | null;
   pricing_info: EventPricingInfo | null;
-  ticket_tiers: readonly EventTicketTier[];
+  ticket_tiers: readonly EventTicketTier[] | null;
   cover_image: EventCoverImage | null;
 }
 

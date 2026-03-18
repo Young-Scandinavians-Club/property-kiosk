@@ -57,7 +57,7 @@ function AppContent() {
 
 export default function App() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#fff' }}>
       <SafeAreaProvider>
         <SWRConfig value={swrConfig}>
           <AppContent />

@@ -1,6 +1,9 @@
-import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
+import {
+  DefaultTheme,
+  NavigationContainer,
+  useNavigationContainerRef,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { enableScreens } from 'react-native-screens';
 
 import type { RootStackParamList } from './types';
 
@@ -11,9 +14,12 @@ import { GroupScreen } from '@/components/screens/GroupScreen';
 import { LandingScreen } from '@/components/screens/LandingScreen';
 import { RulesInfoScreen } from '@/components/screens/RulesInfoScreen';
 
-enableScreens();
-
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const LightTheme = {
+  ...DefaultTheme,
+  colors: { ...DefaultTheme.colors, background: '#fafafa' },
+};
 
 export function AppNavigator() {
   const navigationRef = useNavigationContainerRef<RootStackParamList>();
@@ -25,6 +31,7 @@ export function AppNavigator() {
     <IdleTimeoutProvider navigationRef={navigationRef}>
       <NavigationContainer
         ref={navigationRef}
+        theme={LightTheme}
         onReady={() =>
           console.log(
             '[NAV] NavigationContainer ready — initial route:',
@@ -43,6 +50,7 @@ export function AppNavigator() {
             headerShown: false,
             animation: 'fade',
             animationDuration: 150,
+            contentStyle: { backgroundColor: '#fafafa' },
           }}>
           <Stack.Screen name="Landing" component={LandingScreen} />
           <Stack.Screen name="CheckIn" component={CheckInScreen} />

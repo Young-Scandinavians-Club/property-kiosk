@@ -145,39 +145,43 @@ export function IdleTimeoutProvider({ children, navigationRef }: Props) {
         return false;
       }}>
       {children}
-      <Modal
-        visible={countdownSeconds !== null}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onShow={() => log('MODAL', 'onShow fired — modal is now visible')}
-        onDismiss={() => log('MODAL', 'onDismiss fired — modal dismissed')}>
-        <View
-          style={StyleSheet.absoluteFill}
-          className="items-end justify-end pb-8 pr-8"
-          pointerEvents="box-none"
-          accessibilityLabel="Tap to stay on this screen">
+      {countdownSeconds !== null && (
+        <Modal
+          visible
+          transparent
+          animationType="fade"
+          statusBarTranslucent
+          onShow={() => log('MODAL', 'onShow fired — modal is now visible')}
+          onDismiss={() => log('MODAL', 'onDismiss fired — modal dismissed')}>
           <View
-            style={styles.timerCard}
-            onStartShouldSetResponder={() => {
-              log('MODAL_TOUCH', 'onStartShouldSetResponder → returning true');
-              return true;
-            }}
-            onResponderGrant={() => log('MODAL_TOUCH', 'onResponderGrant — view claimed the touch')}
-            onResponderRelease={() => {
-              log('MODAL_TOUCH', 'onResponderRelease — calling resetTimer');
-              resetTimer();
-            }}>
-            <Text className="text-center text-xl font-semibold text-zinc-900">
-              Returning to home
-            </Text>
-            <Text className="mt-2 text-center text-8xl font-bold text-brand">
-              {countdownSeconds}s
-            </Text>
-            <Text className="mt-2 text-center text-base text-zinc-500">Tap to stay</Text>
+            style={StyleSheet.absoluteFill}
+            className="items-end justify-end pb-8 pr-8"
+            pointerEvents="box-none"
+            accessibilityLabel="Tap to stay on this screen">
+            <View
+              style={styles.timerCard}
+              onStartShouldSetResponder={() => {
+                log('MODAL_TOUCH', 'onStartShouldSetResponder → returning true');
+                return true;
+              }}
+              onResponderGrant={() =>
+                log('MODAL_TOUCH', 'onResponderGrant — view claimed the touch')
+              }
+              onResponderRelease={() => {
+                log('MODAL_TOUCH', 'onResponderRelease — calling resetTimer');
+                resetTimer();
+              }}>
+              <Text className="text-center text-xl font-semibold text-zinc-900">
+                Returning to home
+              </Text>
+              <Text className="mt-2 text-center text-8xl font-bold text-brand">
+                {countdownSeconds}s
+              </Text>
+              <Text className="mt-2 text-center text-base text-zinc-500">Tap to stay</Text>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
+      )}
     </View>
   );
 }

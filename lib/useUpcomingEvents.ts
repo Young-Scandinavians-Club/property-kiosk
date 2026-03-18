@@ -30,8 +30,8 @@ export function useUpcomingEvents() {
 
   const upcoming = data
     ? [...data]
-        .filter((e) => toLocalDate(e.start_date) >= now)
-        .sort((a, b) => toLocalDate(a.start_date).getTime() - toLocalDate(b.start_date).getTime())
+        .filter((e) => e.start_date != null && toLocalDate(e.start_date) >= now)
+        .sort((a, b) => toLocalDate(a.start_date!).getTime() - toLocalDate(b.start_date!).getTime())
         .slice(0, MAX_UPCOMING)
     : undefined;
 
