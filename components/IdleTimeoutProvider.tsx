@@ -4,7 +4,7 @@ import { Modal, Platform, StyleSheet, Text, View } from 'react-native';
 
 import type { RootStackParamList } from '@/components/navigation/types';
 
-const IDLE_TIMEOUT_MS = 15_000;
+const IDLE_TIMEOUT_MS = 45_000;
 const COUNTDOWN_START_MS = 10_000;
 const TICK_MS = 250;
 

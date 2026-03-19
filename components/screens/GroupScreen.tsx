@@ -77,18 +77,26 @@ function getBookingColumns(
   booking: Booking,
   startDate: Date,
   totalDays: number
-): { colStart: number; colEnd: number } {
+): { colStart: number; colEnd: number; overflowLeft: boolean; overflowRight: boolean } | null {
   const checkin = new Date(booking.checkin_date);
   const checkout = new Date(booking.checkout_date);
   const dayIndex = (d: Date) => Math.floor((d.getTime() - startDate.getTime()) / 86400000);
 
-  const checkinIdx = Math.max(0, Math.min(dayIndex(checkin), totalDays - 1));
-  const checkoutIdx = Math.max(0, Math.min(dayIndex(checkout), totalDays - 1));
+  const rawCheckinIdx = dayIndex(checkin);
+  const rawCheckoutIdx = dayIndex(checkout);
 
-  const colStart = checkinIdx * 2 + 2;
+  if (rawCheckoutIdx < 0 || rawCheckinIdx >= totalDays) return null;
+
+  const overflowLeft = rawCheckinIdx < 0;
+  const overflowRight = rawCheckoutIdx >= totalDays;
+
+  const checkinIdx = Math.max(0, Math.min(rawCheckinIdx, totalDays - 1));
+  const checkoutIdx = Math.max(0, Math.min(rawCheckoutIdx, totalDays - 1));
+
+  const colStart = overflowLeft ? 1 : checkinIdx * 2 + 2;
   const colEnd = Math.min(checkoutIdx * 2 + 2, totalDays * 2 + 1);
 
-  return { colStart, colEnd };
+  return { colStart, colEnd, overflowLeft, overflowRight };
 }
 
 function getMemberDisplayName(booking: Booking): string {
@@ -107,25 +115,56 @@ function getInitials(booking: Booking): string {
 }
 
 /**
- * Fix avatar URLs that reference localhost - on Android emulator and physical devices,
- * localhost is unreachable. Replace with the API base host (e.g. 10.0.2.2 for Android emulator).
+ * Resolve a Gravatar avatar URL into one the device can actually reach.
+ *
+ * Gravatar URLs carry a `d=` (default) param that Gravatar redirects to when
+ * no account exists for the hash.  For dev environments that param points at
+ * `http://localhost:4000/images/…`, which fails on physical devices and also
+ * triggers an HTTPS → HTTP downgrade that some platforms block.
+ *
+ * Strategy:
+ *  1. If the URL is a Gravatar URL with a `d=` fallback, extract the fallback
+ *     and resolve it against the API base so it always works from the device.
+ *  2. For any remaining `localhost` references, swap in the API host (or
+ *     10.0.2.2 for the Android emulator).
  */
 function fixAvatarUrlForDevice(url: string | undefined): string | undefined {
-  if (!url || !url.includes('localhost')) return url;
-  try {
-    const { baseUrl } = getApiConfig();
-    const match = baseUrl.match(/^(https?:\/\/)([^/:]+)(:\d+)?/);
-    const host = match?.[2];
-    if (host && host !== 'localhost') {
-      return url.replace(/localhost/g, host);
-    }
-  } catch {
-    // Config not ready; use Platform fallback for Android emulator
-    if (Platform.OS === 'android') {
-      return url.replace(/localhost/g, '10.0.2.2');
+  if (!url) return url;
+
+  let resolvedUrl = url;
+
+  // For Gravatar URLs, extract the `d` (default) fallback and use it directly
+  // so we skip the redirect chain entirely.
+  if (resolvedUrl.includes('gravatar.com/avatar')) {
+    try {
+      const parsed = new URL(resolvedUrl);
+      const fallback = parsed.searchParams.get('d') || parsed.searchParams.get('default');
+      if (fallback && fallback.startsWith('http')) {
+        resolvedUrl = fallback;
+      }
+    } catch {
+      // URL couldn't be parsed; continue with the original
     }
   }
-  return url;
+
+  if (!resolvedUrl.includes('localhost')) return resolvedUrl;
+
+  try {
+    const { baseUrl } = getApiConfig();
+    const apiUrl = new URL(baseUrl);
+    const imgUrl = new URL(resolvedUrl);
+    if (apiUrl.hostname !== 'localhost') {
+      imgUrl.hostname = apiUrl.hostname;
+      imgUrl.port = apiUrl.port;
+      imgUrl.protocol = apiUrl.protocol;
+    }
+    return imgUrl.toString();
+  } catch {
+    if (Platform.OS === 'android') {
+      return resolvedUrl.replace(/localhost/g, '10.0.2.2');
+    }
+  }
+  return resolvedUrl;
 }
 
 /** Avatar: profile image when avatar_url exists, else initials. */
@@ -366,63 +405,109 @@ function CalendarView({
                   {bookings
                     .filter((b) => getBookingRow(b, rooms) === rowIdx)
                     .map((booking) => {
-                      const { colStart, colEnd } = getBookingColumns(
-                        booking,
-                        startDateObj,
-                        totalDays
-                      );
+                      const cols = getBookingColumns(booking, startDateObj, totalDays);
+                      if (!cols) return null;
+                      const { colStart, colEnd, overflowLeft, overflowRight } = cols;
                       const span = colEnd - colStart;
                       const left = (colStart - 1) * halfDayWidth;
-                      const width = span * halfDayWidth;
+                      const rawWidth = span * halfDayWidth;
                       const isBuyout = row.isBuyout;
+                      const chevronColor = isBuyout ? '#16a34a' : '#0284c7';
+                      const avatarSize = rowHeight - 20;
+                      const blockWidth = Math.max(
+                        rawWidth - (overflowLeft ? 2 : 4) + (overflowRight ? 2 : 0),
+                        20
+                      );
+                      const fitsAvatar = blockWidth >= avatarSize + 12;
+                      const clampedAvatarSize = fitsAvatar
+                        ? avatarSize
+                        : Math.max(blockWidth - 12, 20);
 
                       return (
                         <View
                           key={booking.id}
                           style={{
                             position: 'absolute',
-                            left,
+                            left: overflowLeft ? left - 2 : left,
                             top: 4,
-                            width: Math.max(width - 4, 20),
+                            width: blockWidth,
                             height: rowHeight - 8,
                             backgroundColor: isBuyout ? '#dcfce7' : '#e0f2fe',
                             borderColor: isBuyout ? '#bbf7d0' : '#bae6fd',
                             borderWidth: 1,
-                            borderRadius: 6,
+                            borderTopLeftRadius: overflowLeft ? 0 : 6,
+                            borderBottomLeftRadius: overflowLeft ? 0 : 6,
+                            borderTopRightRadius: overflowRight ? 0 : 6,
+                            borderBottomRightRadius: overflowRight ? 0 : 6,
+                            borderLeftWidth: overflowLeft ? 0 : 1,
+                            borderRightWidth: overflowRight ? 0 : 1,
                             overflow: 'hidden',
                             flexDirection: 'row',
                             alignItems: 'center',
                           }}>
-                          <View style={{ paddingLeft: 4, paddingVertical: 4 }}>
+                          {overflowLeft && (
+                            <View
+                              style={{
+                                width: 14,
+                                height: '100%',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                              }}>
+                              <Text
+                                style={{ fontSize: 10, color: chevronColor, fontWeight: '700' }}>
+                                ‹
+                              </Text>
+                            </View>
+                          )}
+                          <View style={{ paddingLeft: overflowLeft ? 0 : 4, paddingVertical: 4 }}>
                             <MemberAvatar
                               booking={booking}
-                              size={rowHeight - 20}
+                              size={clampedAvatarSize}
                               isBuyout={isBuyout}
                             />
                           </View>
-                          <View style={{ flex: 1, paddingHorizontal: 6, gap: 1 }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                              <Text
-                                className={`flex-1 text-xs font-bold ${isBuyout ? 'text-green-900' : 'text-zinc-900'}`}
-                                numberOfLines={1}>
-                                {getMemberDisplayName(booking)}
-                              </Text>
-                              {booking.checked_in && (
-                                <CheckCircleIcon
-                                  color={isBuyout ? '#16a34a' : '#0284c7'}
-                                  size={13}
-                                />
+                          {blockWidth > avatarSize + 30 && (
+                            <View style={{ flex: 1, paddingHorizontal: 6, gap: 1 }}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                <Text
+                                  className={`flex-1 text-xs font-bold ${isBuyout ? 'text-green-900' : 'text-zinc-900'}`}
+                                  numberOfLines={1}>
+                                  {getMemberDisplayName(booking)}
+                                </Text>
+                                {booking.checked_in && (
+                                  <CheckCircleIcon
+                                    color={isBuyout ? '#16a34a' : '#0284c7'}
+                                    size={13}
+                                  />
+                                )}
+                              </View>
+                              {rawWidth > 110 && (
+                                <Text
+                                  className={`text-[10px] font-medium ${isBuyout ? 'text-green-800' : 'text-zinc-600'}`}
+                                  numberOfLines={1}>
+                                  {formatGuestCount(booking)} ·{' '}
+                                  {formatShortDateRange(
+                                    booking.checkin_date,
+                                    booking.checkout_date
+                                  )}
+                                </Text>
                               )}
                             </View>
-                            {width > 110 && (
+                          )}
+                          {overflowRight && (
+                            <View
+                              style={{
+                                width: 14,
+                                height: '100%',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                              }}>
                               <Text
-                                className={`text-[10px] font-medium ${isBuyout ? 'text-green-800' : 'text-zinc-600'}`}
-                                numberOfLines={1}>
-                                {formatGuestCount(booking)} ·{' '}
-                                {formatShortDateRange(booking.checkin_date, booking.checkout_date)}
+                                style={{ fontSize: 10, color: chevronColor, fontWeight: '700' }}>
+                                ›
                               </Text>
-                            )}
-                          </View>
+                            </View>
+                          )}
                         </View>
                       );
                     })}
