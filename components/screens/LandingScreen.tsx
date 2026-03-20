@@ -1,5 +1,13 @@
 import type { ReactNode } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {
   CalendarDaysIcon,
   CheckCircleIcon,
@@ -211,8 +219,12 @@ function UpcomingEventsSection({
         Upcoming YSC Events
       </Text>
       {error ? (
-        <View className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3">
-          <Text className="text-sm text-red-500">Could not load events</Text>
+        <View className="flex-row items-center gap-3 rounded-2xl border border-red-100 bg-red-50 px-4 py-3">
+          <ActivityIndicator size="small" color="#ef4444" />
+          <View>
+            <Text className="text-sm font-semibold text-red-500">Could not load events</Text>
+            <Text className="text-xs text-red-400">Retrying…</Text>
+          </View>
         </View>
       ) : (
         <ScrollView

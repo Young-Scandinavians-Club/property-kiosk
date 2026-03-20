@@ -37,5 +37,5 @@ function normalizeType(type: string): VehicleType {
 export function VehicleIcon({ type, size = 20, color = '#6b7280' }: VehicleIconProps) {
   const Icon = ICONS[normalizeType(type)];
   if (!Icon) return null;
-  return <Icon width={size} height={size} fill={color} />;
+  return <Icon width={size} height={size} color={color} />;
 }

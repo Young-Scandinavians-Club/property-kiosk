@@ -15,6 +15,8 @@ function toLocalDate(dateStr: string): Date {
   return new Date(year ?? 0, (month ?? 1) - 1, day ?? 1);
 }
 
+const RETRY_INTERVAL_MS = 15_000;
+
 export function useUpcomingEvents() {
   const { data, error, isLoading } = useSWR(
     isApiConfigured() ? 'upcomingEvents' : null,
@@ -23,6 +25,11 @@ export function useUpcomingEvents() {
       refreshInterval: 60_000,
       revalidateOnFocus: true,
       onError: (err) => console.error('[useUpcomingEvents] fetch error:', err),
+      // Retry indefinitely with a fixed delay. SWR's default caps at 5 retries;
+      // a custom handler with no count-check runs forever.
+      onErrorRetry: (_err, _key, _config, revalidate, { retryCount }) => {
+        setTimeout(() => revalidate({ retryCount }), RETRY_INTERVAL_MS);
+      },
     }
   );
 
